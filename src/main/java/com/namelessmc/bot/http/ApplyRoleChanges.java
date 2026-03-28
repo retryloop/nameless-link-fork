@@ -24,6 +24,7 @@ import com.namelessmc.java_api.NamelessAPI;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.exceptions.HierarchyException;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 
@@ -113,7 +114,7 @@ public class ApplyRoleChanges extends HttpHandler {
             final long roleId = Long.parseLong(roleObj.get("role_id").getAsString());
             final String action = roleObj.get("action").getAsString();
 
-            final Member member = guild.getMemberById(userId);
+            final Member member = this.retrieveMember(guild, userId);
             final Role role = guild.getRoleById(roleId);
 
             String status;
@@ -165,5 +166,18 @@ public class ApplyRoleChanges extends HttpHandler {
         responseJson.addProperty("status", "success");
         responseJson.add("role_changes", roleResponses);
         Util.sendJsonResponse(responseJson, response);
+    }
+
+    private Member retrieveMember(final Guild guild, final long userId) {
+        final Member cachedMember = guild.getMemberById(userId);
+        if (cachedMember != null) {
+            return cachedMember;
+        }
+
+        try {
+            return guild.retrieveMemberById(userId).complete();
+        } catch (final ErrorResponseException e) {
+            return null;
+        }
     }
 }
