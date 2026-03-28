@@ -30,3 +30,10 @@ mvn package
 cd target
 # find jar file here
 ```
+
+## Maintainer Notes
+
+- This fork includes a Discord member lookup fix in `src/main/java/com/namelessmc/bot/http/ApplyRoleChanges.java`.
+- Role sync must not rely only on `guild.getMemberById(...)`, because that is cache-only in JDA.
+- The current behavior falls back to `guild.retrieveMemberById(...).complete()` before returning `invalid_user`.
+- If Discord role sync fails again for linked users who are still in the guild, inspect this file first.
